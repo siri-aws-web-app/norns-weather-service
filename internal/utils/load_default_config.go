@@ -13,7 +13,7 @@ func LoadAwsDefaultConfig() (aws.Config, error) {
 	var cfg aws.Config
 	var err error
 
-	if os.Getenv("ENV") == "local" {
+	if os.Getenv("ENV") == "dev" {
 		cfg, err = config.LoadDefaultConfig(context.TODO(),
 			config.WithRegion("eu-central-1"),
 		)
