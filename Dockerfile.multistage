@@ -12,17 +12,17 @@ COPY internal ./internal
 
 WORKDIR /app/cmd
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /verdandi
+RUN CGO_ENABLED=0 GOOS=linux go build -o /norn
 
 # Deployment to lean image
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
 
 WORKDIR /
 
-COPY --from=build-stage /verdandi /verdandi
+COPY --from=build-stage /norn /norn
 
 EXPOSE 8080
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/verdandi"]
+ENTRYPOINT ["/norn"]
