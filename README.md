@@ -1,2 +1,2 @@
-# verdandi-weather-service
-Real time weather micro service.
+# norn-weather-service
+Weather micro service.
