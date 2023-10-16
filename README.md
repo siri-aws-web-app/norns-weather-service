@@ -1,2 +1,2 @@
-# norn-weather-service
+# norns-weather-service
 Weather micro service.
