@@ -12,6 +12,6 @@ COPY internal ./internal
 
 WORKDIR /app/cmd
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /norn
+RUN CGO_ENABLED=0 GOOS=linux go build -o /norns
 
-CMD ["/norn"]
+CMD ["/norns"]
