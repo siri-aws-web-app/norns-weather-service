@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -71,37 +72,76 @@ func QueryInputDb(cfg aws.Config, cities []string, limit int, tableType TableTyp
 
 	wd := make(map[string]interface{})
 
+	results := make(chan struct {
+		city string
+		data []map[string]types.AttributeValue
+		err  error
+	}, len(cities))
+
+	var wg sync.WaitGroup
+
 	for _, city := range cities {
-		cityLowercase := strings.ToLower(city)
+		wg.Add(1)
+		go func(city string) {
+			defer wg.Done()
 
-		var tableToQuery string
+			cityLowercase := strings.ToLower(city)
 
-		switch tableType {
-		case RealTime:
-			tableToQuery = fmt.Sprintf("%s-real-time-weather", cityLowercase)
-		case Forecast:
-			tableToQuery = fmt.Sprintf("%s-forecast", cityLowercase)
-		default:
-			return nil, fmt.Errorf("unknown datatype: %s", tableType)
+			var tableToQuery string
+
+			switch tableType {
+			case RealTime:
+				tableToQuery = fmt.Sprintf("%s-real-time-weather", cityLowercase)
+			case Forecast:
+				tableToQuery = fmt.Sprintf("%s-forecast", cityLowercase)
+			default:
+				err = fmt.Errorf("invalid table type")
+				results <- struct {
+					city string
+					data []map[string]types.AttributeValue
+					err  error
+				}{city, nil, err}
+				return
+			}
+
+			input := &dynamodb.QueryInput{
+				TableName:              aws.String(tableToQuery),
+				KeyConditionExpression: aws.String("city = :cityValue"),
+				ExpressionAttributeValues: map[string]types.AttributeValue{
+					":cityValue": &types.AttributeValueMemberS{Value: cityLowercase},
+				},
+				ScanIndexForward: aws.Bool(false),
+				Limit:            aws.Int32(int32(limit)),
+			}
+
+			q, err := client.Query(context.Background(), input)
+			if err != nil {
+				results <- struct {
+					city string
+					data []map[string]types.AttributeValue
+					err  error
+				}{city, nil, err}
+			}
+
+			results <- struct {
+				city string
+				data []map[string]types.AttributeValue
+				err  error
+			}{city, q.Items, nil}
+		}(city)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	for result := range results {
+		if result.err != nil {
+			return nil, result.err
 		}
-
-		input := &dynamodb.QueryInput{
-			TableName:              aws.String(tableToQuery),
-			KeyConditionExpression: aws.String("city = :cityValue"),
-			ExpressionAttributeValues: map[string]types.AttributeValue{
-				":cityValue": &types.AttributeValueMemberS{Value: cityLowercase},
-			},
-			ScanIndexForward: aws.Bool(false),
-			Limit:            aws.Int32(int32(limit)),
-		}
-
-		q, err := client.Query(context.Background(), input)
-		if err != nil {
-			return nil, fmt.Errorf("failed to query, %v", err)
-		}
-
-		if len(q.Items) > 0 {
-			wd[city] = q.Items
+		if len(result.data) > 0 {
+			wd[result.city] = result.data
 		}
 	}
 
