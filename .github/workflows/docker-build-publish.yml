@@ -1,36 +1,20 @@
 # Sample workflow to access AWS resources when workflow is tied to branch
 # The workflow Creates static website using aws s3
 name: Docker build and publish to AWS ECR
+
 on:
   release:
     types: 
       - published
+
 env:
-  AWS_REGION : "eu-central-1"
-# permission can be added at job level or workflow level    
-permissions:
-  id-token: write
-  contents: read
+  AWS_REGION: "eu-central-1"
+
 jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git clone the repository
-        uses: actions/checkout@v4
-
-      - name: Configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: arn:aws:iam::360532638835:role/github-norns
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Set tag as env var
-        run: echo "TAG_REF=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name:  Build Docker image
-        run: |
-          docker build -t norns-weather-service:$TAG_REF .
-
-      - name: Publish to AWS ECR
-        run: |
-          docker push 360532638835.dkr.ecr.eu-central-1.amazonaws.com/ever-given-development/norns-weather-service:$TAG_REF
+  call-build-and-publish-dev:
+    if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-dev')
+    uses: siri-aws-web-app/.github/workflow-templates/docker-build-publish.yml@v1.0.1
+    with:
+      AWS_REGION: $AWS_REGION
+      AWS_ROLE_TO_ASSUME: "arn:aws:iam::360532638835:role/github-norns"
+      ECR_URI: "360532638835.dkr.ecr.eu-central-1.amazonaws.com/norns-weather-service-development"
