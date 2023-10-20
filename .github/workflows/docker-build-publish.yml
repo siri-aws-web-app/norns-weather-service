@@ -31,4 +31,4 @@ jobs:
       - name:  Build Docker image
         run: |
           docker build -t norns-weather-service:${{ steps.git_tag.outputs.tag }}
-        working-directory: ./Dockerfile
+        working-directory: Dockerfile
