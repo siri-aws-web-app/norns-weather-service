@@ -14,8 +14,8 @@ permissions:
 jobs:
   call-build-and-publish-dev:
     if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-dev')
-    uses: siri-aws-web-app/thoth-workflows/.github/workflows/docker-build-publish.yml@v1.0.5
+    uses: siri-aws-web-app/thoth-workflows/.github/workflows/docker-build-publish.yml@v1.0.6
     with:
       AWS_REGION: "eu-central-1"
       AWS_ROLE_TO_ASSUME: "arn:aws:iam::360532638835:role/github-norns"
-      ECR_URI: "360532638835.dkr.ecr.eu-central-1.amazonaws.com/norns-weather-service-development"  
+      ECR_URI: "360532638835.dkr.ecr.eu-central-1.amazonaws.com/norns-weather-service-development"
