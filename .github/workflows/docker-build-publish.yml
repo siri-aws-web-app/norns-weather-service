@@ -12,13 +12,13 @@ permissions:
   id-token: write
   contents: read
 jobs:
-  D:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
 
-      - name: configure aws credentials
+      - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::360532638835:role/github-norns
@@ -30,3 +30,7 @@ jobs:
       - name:  Build Docker image
         run: |
           docker build -t norns-weather-service:$TAG_REF .
+
+      - name: Publish to AWS ECR
+        run: |
+          docker push 360532638835.dkr.ecr.eu-central-1.amazonaws.com/ever-given-development/norns-weather-service:$TAG_REF
