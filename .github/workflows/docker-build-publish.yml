@@ -24,11 +24,9 @@ jobs:
           role-to-assume: arn:aws:iam::360532638835:role/github-norns
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Get Git Tag
-        id: git_tag
-        run: echo "::set-output name=tag::$(echo $GITHUB_REF | awk -F'/' '{print $NF}')"
+      - name: Set tag as env var
+        run: echo "TAG_REF=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name:  Build Docker image
         run: |
-          docker build -t norns-weather-service:${{ steps.git_tag.outputs.tag }}
-        working-directory: Dockerfile
+          docker build -t norns-weather-service:$TAG_REF .
