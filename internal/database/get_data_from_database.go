@@ -27,14 +27,14 @@ const (
 
 // List all tables in the database
 
-func GetCurrentAndPastWeatherDataFromDb(cities []string) ([]byte, error) {
+func GetCurrentWeatherDataFromDb(cities []string) ([]byte, error) {
 	// Load default config from utils
 	cfg, err = utils.LoadAwsDefaultConfig()
 	if err != nil {
 		log.Fatalf("failed to load config, %v", err)
 	}
 
-	wd, err := QueryInputDb(cfg, cities, 6, RealTime)
+	wd, err := QueryInputDb(cfg, cities, 1, RealTime)
 	if err != nil {
 		log.Fatalf("failed to query, %v", err)
 	}
