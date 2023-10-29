@@ -20,13 +20,13 @@ func StartWeatherApi() {
 
 	app.Use(cors.New())
 
-	app.Get("/current-past-weather-data", func(c *fiber.Ctx) error {
+	app.Get("/current-weather-data", func(c *fiber.Ctx) error {
 		cities, err := GetCitiesList(c.Query("cities"))
 		if err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
-		data, err := CurrentAndPastWeatherDataFromDb(cities)
+		data, err := GetCurrentWeatherDataFromDb(cities)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to get current weather data")
 		}
@@ -51,8 +51,8 @@ func StartWeatherApi() {
 	app.Listen(":3000")
 }
 
-func CurrentAndPastWeatherDataFromDb(citiesList []string) ([]byte, error) {
-	return database.GetCurrentAndPastWeatherDataFromDb(citiesList)
+func GetCurrentWeatherDataFromDb(citiesList []string) ([]byte, error) {
+	return database.GetCurrentWeatherDataFromDb(citiesList)
 }
 
 func ForecastData(citiesList []string) ([]byte, error) {
