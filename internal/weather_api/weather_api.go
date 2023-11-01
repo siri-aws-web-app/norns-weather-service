@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/siri-aws-web-app/verdandi-weather-service/internal/database"
 )
 
@@ -17,8 +16,6 @@ func StartWeatherApi() {
 		ServerHeader:  "Fiber",
 		AppName:       "verdandi-weather-service",
 	})
-
-	app.Use(cors.New())
 
 	app.Get("/current-weather-data", func(c *fiber.Ctx) error {
 		cities, err := GetCitiesList(c.Query("cities"))
